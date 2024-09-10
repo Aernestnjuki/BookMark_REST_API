@@ -1,9 +1,10 @@
-from flask import Flask
+from flask import Flask, redirect, jsonify
 from dotenv import load_dotenv
 import os
 from src.auth import auth
 from src.booKMark import bookmarks
-from src.database import db
+from src.constants.http_status_code import HTTP_404_NOT_FOUND
+from src.database import db, BookMark
 from flask_jwt_extended import JWTManager
 
 load_dotenv()
@@ -34,5 +35,29 @@ def create_app(test_config=None):
 
     app.register_blueprint(auth)
     app.register_blueprint(bookmarks)
+
+    # incrementing the visits
+
+    @app.get('/<short_url>')
+    def redirect_to_url(short_url):
+        bookmark = BookMark.query.filter_by(short_url=short_url).first_or_404()
+
+        if bookmark:
+            bookmark.visits = bookmark.visits+1
+            db.session.commit()
+
+        return redirect(bookmark.url) # redirect to the url in the database
+
+
+    # error handling
+
+    @app.errorhandler(HTTP_404_NOT_FOUND)
+    def handle_404(e):
+        return jsonify({'error': "Not Found"}), HTTP_404_NOT_FOUND
+
+
+    @app.errorhandler(500)
+    def server_error_handler(e):
+        return jsonify({'error': 'something went wrong'}), 500 # internal server error
 
     return app

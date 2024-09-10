@@ -54,5 +54,10 @@ class BookMark(db.Model):
 
         self.short_url = self.generate_short_characters()
 
+
+    def save(self):
+        db.session.add(self)
+        db.session.commit()
+
     def __repr__(self):
         return f'Bookmark>>>> {self.url}'
