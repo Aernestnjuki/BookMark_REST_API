@@ -36,8 +36,8 @@ def create_app(test_config=None):
     app.register_blueprint(auth)
     app.register_blueprint(bookmarks)
 
-    # incrementing the visits
 
+    # incrementing the visits
     @app.get('/<short_url>')
     def redirect_to_url(short_url):
         bookmark = BookMark.query.filter_by(short_url=short_url).first_or_404()
@@ -50,7 +50,6 @@ def create_app(test_config=None):
 
 
     # error handling
-
     @app.errorhandler(HTTP_404_NOT_FOUND)
     def handle_404(e):
         return jsonify({'error': "Not Found"}), HTTP_404_NOT_FOUND
